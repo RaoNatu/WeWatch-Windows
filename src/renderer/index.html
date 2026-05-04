@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeWatch</title>
+    <link rel="icon" href="../assets/icon.png" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+<main class="app-shell">
+    <header class="topbar">
+        <div class="brand-lockup">
+            <img class="brand-mark" src="../assets/icon.png" alt="" aria-hidden="true" />
+            <h1>WeWatch</h1>
+            <p id="sessionSummary">Offline</p>
+        </div>
+
+        <div class="topbar-actions">
+            <div class="status-cluster" aria-label="Connection status">
+                <span id="serverBadge" class="badge">Server off</span>
+                <span id="socketBadge" class="badge">Socket off</span>
+                <span id="vlcBadge" class="badge">VLC off</span>
+            </div>
+
+            <div class="app-controls">
+                <span id="versionBadge" class="version-pill">v...</span>
+                <button id="checkUpdateButton" class="update-button" type="button">Check update</button>
+                <button id="installUpdateButton" class="update-button update-install" type="button" hidden>Restart to update</button>
+                <button id="themeToggle" class="theme-switch" type="button" aria-label="Switch to light theme">
+                    <span class="theme-icon sun" aria-hidden="true">☀</span>
+                    <span class="theme-knob" aria-hidden="true"></span>
+                    <span class="theme-icon moon" aria-hidden="true">☾</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="layout">
+        <aside class="panel setup-panel">
+            <div class="panel-heading">
+                <h2>Connection</h2>
+                <span id="rolePill" class="soft-pill">Offline</span>
+            </div>
+
+            <div class="field">
+                <label for="userName">Name</label>
+                <input id="userName" autocomplete="off" placeholder="Your name" />
+            </div>
+
+            <div class="field">
+                <label for="serverUrl">Host IP address</label>
+                <div class="input-action">
+                    <input id="serverUrl" autocomplete="off" placeholder="100.71.245.69" />
+                    <button id="copyServerUrlButton" type="button">Copy</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="serverPort">Port</label>
+                <input id="serverPort" type="number" min="1024" max="65535" value="3000" />
+            </div>
+
+            <div class="connection-actions">
+                <button id="hostMode" class="primary" type="button">
+                    <span>Start hosting</span>
+                </button>
+
+                <button id="friendMode" type="button">
+                    <span>Join host</span>
+                </button>
+
+                <button id="disconnectButton" type="button">
+                    Disconnect
+                </button>
+            </div>
+
+            <hr />
+
+            <div class="panel-heading compact">
+                <h2>VLC</h2>
+            </div>
+
+            <div class="field two">
+                <div>
+                    <label for="vlcHost">VLC host</label>
+                    <input id="vlcHost" autocomplete="off" value="127.0.0.1" />
+                </div>
+
+                <div>
+                    <label for="vlcPort">VLC port</label>
+                    <input id="vlcPort" type="number" min="1" max="65535" value="8080" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="vlcPassword">VLC password</label>
+                <input id="vlcPassword" type="password" autocomplete="off" value="1234" />
+            </div>
+
+            <label class="check-row">
+                <input id="autoFollow" type="checkbox" checked />
+                <span>Auto sync to host</span>
+            </label>
+
+            <div class="button-row">
+                <button id="launchVlcButton" type="button">Launch VLC</button>
+                <button id="checkVlcButton" type="button">Check VLC</button>
+            </div>
+
+        </aside>
+
+        <section class="main-panel">
+            <section class="player-panel">
+                <div class="now-row">
+                    <div class="media-title">
+                        <span class="eyebrow">Now playing</span>
+                        <h2 id="fileName" tabindex="0">No media</h2>
+                        <p id="mediaMeta">00:00 / 00:00</p>
+                    </div>
+
+                    <button id="openFileButton" type="button">
+                        Open file
+                    </button>
+                </div>
+
+                <div class="progress-wrap">
+                    <input id="seekSlider" type="range" min="0" max="1" step="1" value="0" />
+
+                    <div class="time-row">
+                        <span id="currentTime">00:00</span>
+                        <span id="durationTime">00:00</span>
+                    </div>
+                </div>
+
+                <div class="transport">
+                    <button id="playButton" class="primary" type="button">Play</button>
+                    <button id="pauseButton" type="button">Pause</button>
+                    <button id="seekButton" type="button">Seek</button>
+                    <button id="syncButton" type="button">Sync</button>
+                </div>
+            </section>
+
+            <div class="grid">
+                <section class="mini-panel">
+                    <h3>Session</h3>
+
+                    <dl>
+                        <div>
+                            <dt>Role</dt>
+                            <dd id="roleValue">-</dd>
+                        </div>
+
+                        <div>
+                            <dt>Host</dt>
+                            <dd id="hostValue">-</dd>
+                        </div>
+
+                        <div>
+                            <dt>Drift</dt>
+                            <dd id="driftValue">-</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section class="mini-panel">
+                    <h3>People</h3>
+                    <div id="peopleList" class="people-list"></div>
+                </section>
+
+            </div>
+
+            <section class="event-log" aria-label="Events">
+                <div class="log-heading">
+                    <h3>Events</h3>
+                </div>
+                <div id="eventLog"></div>
+            </section>
+
+        </section>
+
+    </section>
+
+    <footer class="app-footer">Made with ❤️ by Natu</footer>
+</main>
+
+<!-- IMPORTANT: module for imports -->
+<script type="module" src="./renderer.js"></script>
+</body>
+</html>

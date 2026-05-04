@@ -1,0 +1,83 @@
+# =========================
+# Node / Electron
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Electron build output
+dist/
+release/
+out/
+win-unpacked/
+*.exe
+*.blockmap
+*.msi
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+
+# =========================
+# Android / Gradle
+# =========================
+.gradle/
+**/.gradle/
+
+build/
+**/build/
+
+# Electron build resources are source assets, not generated output
+!build/
+!build/icon.ico
+!build/icon.png
+
+# Android Studio local files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Local Android SDK path
+local.properties
+**/local.properties
+
+# Native Android generated files
+.externalNativeBuild/
+.cxx/
+captures/
+
+# Android output files
+*.apk
+*.aab
+*.ap_
+*.aar
+
+# Signing keys - do not upload
+*.jks
+*.keystore
+keystore.properties
+
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+
+# =========================
+# Your generated structure file
+# =========================
+structure.txt
