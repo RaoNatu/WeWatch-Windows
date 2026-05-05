@@ -219,12 +219,14 @@ function formatTime(value) {
 }
 
 function getActionMessage(client, action = {}) {
+    const timeLabel = Number.isFinite(Number(action.time)) ? ` at ${formatTime(action.time)}` : "";
+
     if (action.kind === "play") {
-        return `${client.name} playing`;
+        return `${client.name} playing${timeLabel}`;
     }
 
     if (action.kind === "pause") {
-        return `${client.name} paused`;
+        return `${client.name} paused${timeLabel}`;
     }
 
     if (action.kind === "seek") {
@@ -251,9 +253,9 @@ function broadcastStatusEvents(client, previous, next) {
 
     if (previous && previous.state !== next.state) {
         if (next.state === "playing") {
-            emitClientEvent(client, "play", `${client.name} playing`);
+            emitClientEvent(client, "play", `${client.name} playing at ${formatTime(next.time)}`);
         } else if (next.state === "paused") {
-            emitClientEvent(client, "pause", `${client.name} paused`);
+            emitClientEvent(client, "pause", `${client.name} paused at ${formatTime(next.time)}`);
         }
     }
 

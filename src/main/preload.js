@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('myAPI', {
     sendVlcCommand: (command, value, options) => ipcRenderer.invoke('vlc:command', {command, value, options}),
     launchVlc: (options) => ipcRenderer.invoke('vlc:launch', options),
     openMediaFile: (options) => ipcRenderer.invoke('vlc:open-file', options),
+    showOsdMessage: (payload) => ipcRenderer.send('osd:show', payload),
     startServer: (port) => ipcRenderer.invoke('server:start', port),
     getServerStatus: () => ipcRenderer.invoke('server:status'),
     getAppInfo: () => ipcRenderer.invoke('app:get-info'),

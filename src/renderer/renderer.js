@@ -123,6 +123,35 @@ function log(msg) {
     logEl.prepend(p);
 }
 
+function showVlcOsd(message, kind = "event") {
+    if (!message || !window.myAPI?.showOsdMessage) {
+        return;
+    }
+
+    window.myAPI.showOsdMessage({
+        message,
+        kind,
+        at: Date.now(),
+    });
+}
+
+function logSessionEvent(message, kind = "event") {
+    log(message);
+    showVlcOsd(message, kind);
+}
+
+function getLocalActionMessage(successMessage, action = {}) {
+    if (action.kind === "play") {
+        return `Playing at ${formatTime(action.time)}`;
+    }
+
+    if (action.kind === "pause") {
+        return `Paused at ${formatTime(action.time)}`;
+    }
+
+    return successMessage;
+}
+
 function getUserName() {
     return document.getElementById("userName").value.trim() || "User";
 }
@@ -334,7 +363,12 @@ function offlineStatus() {
 
 function updateMediaUi(status) {
     if (fileNameEl.innerText !== status.filename) {
-        log(`File changed: ${status.filename}`);
+        const message = `File changed: ${status.filename}`;
+        if (status.filename !== "No media" && !socketIsOpen()) {
+            logSessionEvent(message, "file");
+        } else {
+            log(message);
+        }
     }
 
     fileNameEl.innerText = status.filename;
@@ -640,7 +674,7 @@ function handleSocketMessage(data) {
     }
 
     if (data.type === "event") {
-        log(data.message || data.event?.message || "Session event");
+        logSessionEvent(data.message || data.event?.message || "Session event", data.event?.kind || "event");
         return;
     }
 
@@ -749,7 +783,11 @@ async function runVlcCommand(command, value, successMessage, action) {
         await window.myAPI.sendVlcCommand(command, value, getVlcConfig());
         setStatus(vlcStatus, true);
         if (!action || !socketIsOpen()) {
-            log(successMessage);
+            if (action) {
+                logSessionEvent(getLocalActionMessage(successMessage, action), action.kind);
+            } else {
+                log(successMessage);
+            }
         }
 
         if (action) {
@@ -983,7 +1021,7 @@ disconnectBtn.onclick = () => {
 
     const name = getUserName();
     socket.close();
-    log(`${name} disconnected`);
+    logSessionEvent(`${name} disconnected`, "left");
 };
 
 copyServerUrlButton.onclick = async () => {
@@ -1013,7 +1051,11 @@ openFileButton.onclick = async () => {
 
     setStatus(vlcStatus, true);
     const filename = getFileNameFromPath(result.filePath);
-    log(`Opened file: ${filename}`);
+    if (socketIsOpen()) {
+        log(`Opened file: ${filename}`);
+    } else {
+        logSessionEvent(`Opened file: ${filename}`, "file");
+    }
     suppressObservedChanges();
     sendAction("file", {
         filename,
