@@ -18,7 +18,6 @@ const disconnectBtn = document.getElementById("disconnectButton");
 const hostButton = document.getElementById("hostMode");
 const joinButton = document.getElementById("friendMode");
 const copyServerUrlButton = document.getElementById("copyServerUrlButton");
-const openFileButton = document.getElementById("openFileButton");
 const launchVlcButton = document.getElementById("launchVlcButton");
 const checkVlcButton = document.getElementById("checkVlcButton");
 const playButton = document.getElementById("playButton");
@@ -69,6 +68,48 @@ const statusLabels = {
 const THEME_STORAGE_KEY = "wewatch-theme";
 const updateMessages = new Set();
 let lastLoggedDownloadPercent = -1;
+
+const STORAGE_KEYS = {
+    userName: "wewatch-userName",
+    serverUrl: "wewatch-serverUrl",
+    serverPort: "wewatch-serverPort",
+    vlcHost: "wewatch-vlcHost",
+    vlcPort: "wewatch-vlcPort",
+    vlcPassword: "wewatch-vlcPassword",
+    autoFollow: "wewatch-autoFollow",
+};
+
+function loadSavedInputs() {
+    const userName = localStorage.getItem(STORAGE_KEYS.userName);
+    if (userName) document.getElementById("userName").value = userName;
+
+    const serverUrl = localStorage.getItem(STORAGE_KEYS.serverUrl);
+    if (serverUrl) document.getElementById("serverUrl").value = serverUrl;
+
+    const serverPort = localStorage.getItem(STORAGE_KEYS.serverPort);
+    if (serverPort) document.getElementById("serverPort").value = serverPort;
+
+    const vlcHost = localStorage.getItem(STORAGE_KEYS.vlcHost);
+    if (vlcHost) document.getElementById("vlcHost").value = vlcHost;
+
+    const vlcPort = localStorage.getItem(STORAGE_KEYS.vlcPort);
+    if (vlcPort) document.getElementById("vlcPort").value = vlcPort;
+
+    const vlcPassword = localStorage.getItem(STORAGE_KEYS.vlcPassword);
+    if (vlcPassword) document.getElementById("vlcPassword").value = vlcPassword;
+
+    const autoFollow = localStorage.getItem(STORAGE_KEYS.autoFollow);
+    if (autoFollow !== null) document.getElementById("autoFollow").checked = autoFollow === "true";
+}
+
+function saveInput(key) {
+    const el = document.getElementById(key);
+    if (el.type === "checkbox") {
+        localStorage.setItem(STORAGE_KEYS[key], el.checked);
+    } else {
+        localStorage.setItem(STORAGE_KEYS[key], el.value);
+    }
+}
 
 const roleLabels = {
     offline: "Offline",
@@ -1036,33 +1077,6 @@ copyServerUrlButton.onclick = async () => {
     }
 };
 
-openFileButton.onclick = async () => {
-    const result = await window.myAPI.openMediaFile(getVlcConfig());
-
-    if (result.canceled) {
-        return;
-    }
-
-    if (!result.ok) {
-        setStatus(vlcStatus, false);
-        log(`Open file failed: ${result.message}`);
-        return;
-    }
-
-    setStatus(vlcStatus, true);
-    const filename = getFileNameFromPath(result.filePath);
-    if (socketIsOpen()) {
-        log(`Opened file: ${filename}`);
-    } else {
-        logSessionEvent(`Opened file: ${filename}`, "file");
-    }
-    suppressObservedChanges();
-    sendAction("file", {
-        filename,
-    });
-    setTimeout(refreshVlcStatus, 400);
-};
-
 launchVlcButton.onclick = async () => {
     const result = await window.myAPI.launchVlc(getVlcConfig());
 
@@ -1151,7 +1165,16 @@ setInterval(() => {
 
 refreshServerBadge();
 applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || "dark");
+loadSavedInputs();
 initAppInfo();
+
+document.getElementById("userName").addEventListener("input", () => saveInput("userName"));
+document.getElementById("serverUrl").addEventListener("input", () => saveInput("serverUrl"));
+document.getElementById("serverPort").addEventListener("input", () => saveInput("serverPort"));
+document.getElementById("vlcHost").addEventListener("input", () => saveInput("vlcHost"));
+document.getElementById("vlcPort").addEventListener("input", () => saveInput("vlcPort"));
+document.getElementById("vlcPassword").addEventListener("input", () => saveInput("vlcPassword"));
+document.getElementById("autoFollow").addEventListener("change", () => saveInput("autoFollow"));
 
 setStatus(socketStatus, false);
 setStatus(vlcStatus, false);

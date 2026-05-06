@@ -290,6 +290,18 @@ cd android
 - If Android VLC control fails, re-check VLC Remote Access URL and OTP/password.
 - If sync works but video differs, make sure every device opened the same media file.
 
+## Graphify
+
+This repository uses [Graphify](https://github.com/anomalyco/graphify) to generate a code knowledge graph for faster codebase navigation.
+
+The generated graph lives in `graphify-out/`. If it's stale, update it:
+
+```bash
+graphify update .
+```
+
+You can then explore the graph structure through `graphify-out/graph.html` in a browser.
+
 ## License
 
 ISC

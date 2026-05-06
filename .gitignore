@@ -8,6 +8,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Electron build output
+graphify-out/
 dist/
 release/
 out/

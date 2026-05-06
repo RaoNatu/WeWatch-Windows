@@ -1,6 +1,6 @@
 {
   "name": "wewatch",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "WeWatch Electron App",
   "main": "src/main/main.js",
   "type": "commonjs",
