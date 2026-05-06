@@ -86,6 +86,7 @@ public class MainActivity extends Activity {
     private TextView eventLog;
     private TextView updateStatusText;
     private TextView footerText;
+    private TextView footerVersionText;
     private SeekBar seekBar;
     private EditText nameInput;
     private EditText hostInput;
@@ -1397,7 +1398,7 @@ public class MainActivity extends Activity {
     private void styleTextTree(View view) {
         if (view instanceof TextView) {
             TextView text = (TextView) view;
-            text.setTextColor(text == sessionSummary || text == versionText || text == mediaMeta || text == vlcStatusText || text == peopleText || text == eventLog || text == updateStatusText || text == footerText
+            text.setTextColor(text == sessionSummary || text == versionText || text == mediaMeta || text == vlcStatusText || text == peopleText || text == eventLog || text == updateStatusText || text == footerText || text == footerVersionText
                     ? mutedColor
                     : textColor);
         }

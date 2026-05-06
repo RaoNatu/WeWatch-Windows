@@ -44,15 +44,6 @@
                     android:text="Offline"
                     android:textColor="@color/muted"
                     android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/versionText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:text="Version 1.0.0"
-                    android:textColor="@color/muted"
-                    android:textSize="12sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -770,5 +761,13 @@
             android:textColor="@color/muted"
             android:textSize="12sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/versionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/muted"
+            android:textSize="11sp" />
     </LinearLayout>
 </ScrollView>
