@@ -15,12 +15,6 @@ const major = Number(majorText);
 const minor = Number(minorText);
 const patch = Number(patchText);
 const version = `${major}.${minor}.${patch}`;
-const versionCode = major * 10000 + minor * 100 + patch;
-
-if (versionCode <= 0 || versionCode > 2100000000) {
-    console.error("Version code is outside Android's allowed range.");
-    process.exit(1);
-}
 
 function writeJson(filePath, update) {
     const fullPath = path.join(root, filePath);
@@ -40,19 +34,4 @@ writeJson("package-lock.json", json => {
     }
 });
 
-const gradlePropertiesPath = path.join(root, "android", "gradle.properties");
-let gradleProperties = fs.readFileSync(gradlePropertiesPath, "utf8");
-
-function setProperty(content, key, value) {
-    const pattern = new RegExp(`^${key}=.*$`, "m");
-    if (pattern.test(content)) {
-        return content.replace(pattern, `${key}=${value}`);
-    }
-    return `${content.trimEnd()}\n${key}=${value}\n`;
-}
-
-gradleProperties = setProperty(gradleProperties, "WEWATCH_VERSION_NAME", version);
-gradleProperties = setProperty(gradleProperties, "WEWATCH_VERSION_CODE", String(versionCode));
-fs.writeFileSync(gradlePropertiesPath, gradleProperties);
-
-console.log(`WeWatch version set to ${version} (Android versionCode ${versionCode}).`);
+console.log(`WeWatch Windows version set to ${version}.`);

@@ -31,47 +31,6 @@ win-unpacked/
 
 
 # =========================
-# Android / Gradle
-# =========================
-.gradle/
-**/.gradle/
-
-build/
-**/build/
-
-# Electron build resources are source assets, not generated output
-!build/
-!build/icon.ico
-!build/icon.png
-
-# Android Studio local files
-.idea/
-*.iml
-*.ipr
-*.iws
-
-# Local Android SDK path
-local.properties
-**/local.properties
-
-# Native Android generated files
-.externalNativeBuild/
-.cxx/
-captures/
-
-# Android output files
-*.apk
-*.aab
-*.ap_
-*.aar
-
-# Signing keys - do not upload
-*.jks
-*.keystore
-keystore.properties
-
-
-# =========================
 # OS files
 # =========================
 .DS_Store
@@ -82,3 +41,4 @@ Thumbs.db
 # Your generated structure file
 # =========================
 structure.txt
+
