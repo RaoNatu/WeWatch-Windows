@@ -19,7 +19,7 @@ The app does not stream video files. Everyone should have the same media availab
 - Control VLC from the Windows app.
 - Connect Android phones to the Windows host.
 - Build a shareable Windows installer.
-- Show app versions and check GitHub Releases for updates.
+- Show app versions and check GitHub Releases for updates from the WeWatch-Windows repository.
 
 ## Requirements
 
@@ -90,7 +90,7 @@ npm run version:set -- 1.0.3
 npm run build
 ```
 
-5. Create a GitHub Release named/tagged `v1.0.3`.
+5. Create a GitHub Release in `RaoNatu/WeWatch-Windows` named/tagged `v1.0.3`.
 6. Upload these files to that release:
 
 ```text
