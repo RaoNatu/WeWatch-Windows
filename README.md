@@ -55,7 +55,7 @@ npm run build
 The installer is generated at:
 
 ```text
-dist/WeWatch-Setup-1.0.0.exe
+dist/WeWatch-Setup-<version>.exe
 ```
 
 Send that `.exe` file to friends. It creates normal desktop and Start Menu shortcuts named `WeWatch`.
@@ -70,7 +70,7 @@ Set the Windows app version:
 npm run version:set -- 1.0.3
 ```
 
-This updates `package.json` and `package-lock.json`. The Android app has its own version in its [own repository](https://github.com/RaoNatu/WeWatch-Android).
+This updates `package.json` and `package-lock.json` (including the workspace root package entry when present). The Android app has its own version in its [own repository](https://github.com/RaoNatu/WeWatch-Android).
 
 ## Release Workflow
 
@@ -94,8 +94,8 @@ npm run build
 6. Upload these files to that release:
 
 ```text
-dist/WeWatch-Setup-1.0.3.exe
-dist/WeWatch-Setup-1.0.3.exe.blockmap
+dist/WeWatch-Setup-<version>.exe
+dist/WeWatch-Setup-<version>.exe.blockmap
 dist/latest.yml
 ```
 
@@ -147,8 +147,9 @@ Default connection values:
 
 ```text
 src/
-  assets/       Windows app logo used by Electron
+  assets/       Windows app logo and UI images used by Electron
   main/         Electron main process, VLC bridge, and session server
+  overlay/      Windows overlay UI displayed above VLC
   renderer/     Windows app UI, socket client, and sync behavior
 
 build/          Windows installer icon resources
