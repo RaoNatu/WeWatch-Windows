@@ -35,6 +35,7 @@ const seekSlider = document.getElementById("seekSlider");
 const currentTimeEl = document.getElementById("currentTime");
 const durationTimeEl = document.getElementById("durationTime");
 const peopleListEl = document.getElementById("peopleList");
+const lastPlayedInfo = document.getElementById("lastPlayedInfo");
 
 let socket = null;
 let role = "offline";
@@ -100,6 +101,17 @@ function loadSavedInputs() {
 
     const autoFollow = localStorage.getItem(STORAGE_KEYS.autoFollow);
     if (autoFollow !== null) document.getElementById("autoFollow").checked = autoFollow === "true";
+
+    renderLastPlayedUi();
+}
+
+function renderLastPlayedUi() {
+    const lastFileName = localStorage.getItem("wewatch-lastFileName");
+    const lastTime = localStorage.getItem("wewatch-lastTime");
+    if (lastFileName && lastFileName !== "No media" && lastPlayedInfo) {
+        lastPlayedInfo.innerText = `${lastFileName} (at ${formatTime(lastTime)})`;
+        lastPlayedInfo.title = `${lastFileName} (at ${formatTime(lastTime)})`;
+    }
 }
 
 function saveInput(key) {
@@ -403,13 +415,21 @@ function offlineStatus() {
 }
 
 function updateMediaUi(status) {
-    if (fileNameEl.innerText !== status.filename) {
+    const previousFilename = fileNameEl.innerText;
+    if (previousFilename !== status.filename) {
         const message = `File changed: ${status.filename}`;
         if (status.filename !== "No media" && !socketIsOpen()) {
             logSessionEvent(message, "file");
-        } else {
+        } else if (status.filename !== "No media") {
             log(message);
         }
+    }
+
+    if (status.filename && status.filename !== "No media") {
+        localStorage.setItem("wewatch-lastFileName", status.filename);
+        localStorage.setItem("wewatch-lastTime", status.time);
+    } else if (previousFilename !== "No media" && status.filename === "No media") {
+        renderLastPlayedUi();
     }
 
     fileNameEl.innerText = status.filename;
@@ -808,6 +828,7 @@ async function refreshVlcStatus(shouldLog = false) {
     } catch (err) {
         currentStatus = offlineStatus();
         setStatus(vlcStatus, false);
+        updateMediaUi(currentStatus);
         publishStatus();
         updateDrift();
 
@@ -1060,6 +1081,11 @@ joinButton.onclick = async () => {
 disconnectBtn.onclick = () => {
     if (!socket) return;
 
+    if (currentStatus && currentStatus.filename && currentStatus.filename !== "No media") {
+        localStorage.setItem("wewatch-lastFileName", currentStatus.filename);
+        localStorage.setItem("wewatch-lastTime", currentStatus.time);
+    }
+
     const name = getUserName();
     socket.close();
     logSessionEvent(`${name} disconnected`, "left");
@@ -1180,3 +1206,10 @@ setStatus(socketStatus, false);
 setStatus(vlcStatus, false);
 setRole(role);
 renderPeople([]);
+
+window.addEventListener("beforeunload", () => {
+    if (currentStatus && currentStatus.filename && currentStatus.filename !== "No media") {
+        localStorage.setItem("wewatch-lastFileName", currentStatus.filename);
+        localStorage.setItem("wewatch-lastTime", currentStatus.time);
+    }
+});
