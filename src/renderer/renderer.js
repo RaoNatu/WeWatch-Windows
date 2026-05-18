@@ -2,6 +2,14 @@ import { createSocket } from "./socket.js";
 import { setSync, getExpectedPosition } from "./sync.js";
 
 const logEl = document.getElementById("eventLog");
+const eventsTab = document.getElementById("eventsTab");
+const chatTab = document.getElementById("chatTab");
+const eventsPane = document.getElementById("eventsPane");
+const chatPane = document.getElementById("chatPane");
+const chatMessagesEl = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const chatSendButton = document.getElementById("chatSendButton");
 
 const sessionSummary = document.getElementById("sessionSummary");
 const roleBadge = document.getElementById("rolePill");
@@ -26,6 +34,12 @@ const seekButton = document.getElementById("seekButton");
 const syncButton = document.getElementById("syncButton");
 const autoFollow = document.getElementById("autoFollow");
 const themeToggle = document.getElementById("themeToggle");
+const appearanceMenu = document.getElementById("appearanceMenu");
+const schemeButtons = Array.from(document.querySelectorAll("[data-scheme]"));
+const customPrimary = document.getElementById("customPrimary");
+const customSecondary = document.getElementById("customSecondary");
+const customTertiary = document.getElementById("customTertiary");
+const resetSchemeButton = document.getElementById("resetSchemeButton");
 const checkUpdateButton = document.getElementById("checkUpdateButton");
 const installUpdateButton = document.getElementById("installUpdateButton");
 
@@ -67,8 +81,34 @@ const statusLabels = {
 };
 
 const THEME_STORAGE_KEY = "wewatch-theme";
+const SCHEME_STORAGE_KEY = "wewatch-color-scheme";
+const CUSTOM_SCHEME_STORAGE_KEY = "wewatch-custom-colors";
+const MAX_CHAT_LENGTH = 500;
 const updateMessages = new Set();
 let lastLoggedDownloadPercent = -1;
+
+const COLOR_SCHEMES = {
+    aurora: {
+        primary: "#6ee7d8",
+        secondary: "#8f7dff",
+        tertiary: "#ff8b6e",
+    },
+    ember: {
+        primary: "#ffb86c",
+        secondary: "#42d9c8",
+        tertiary: "#ff5d73",
+    },
+    forest: {
+        primary: "#7bd88f",
+        secondary: "#56a8f5",
+        tertiary: "#f2c94c",
+    },
+    neon: {
+        primary: "#3ef2ff",
+        secondary: "#ff4fd8",
+        tertiary: "#d6ff57",
+    },
+};
 
 const STORAGE_KEYS = {
     userName: "wewatch-userName",
@@ -137,6 +177,87 @@ function applyTheme(theme) {
     localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
 }
 
+function normalizeHexColor(value, fallback) {
+    const raw = String(value || "").trim();
+    return /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : fallback;
+}
+
+function hexToRgbTriplet(value) {
+    const hex = normalizeHexColor(value, "#6ee7d8").slice(1);
+    const number = Number.parseInt(hex, 16);
+    const red = (number >> 16) & 255;
+    const green = (number >> 8) & 255;
+    const blue = number & 255;
+
+    return `${red}, ${green}, ${blue}`;
+}
+
+function normalizeColorScheme(colors = {}) {
+    return {
+        primary: normalizeHexColor(colors.primary, COLOR_SCHEMES.aurora.primary),
+        secondary: normalizeHexColor(colors.secondary, COLOR_SCHEMES.aurora.secondary),
+        tertiary: normalizeHexColor(colors.tertiary, COLOR_SCHEMES.aurora.tertiary),
+    };
+}
+
+function getStoredCustomScheme() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(CUSTOM_SCHEME_STORAGE_KEY) || "null");
+        return stored ? normalizeColorScheme(stored) : null;
+    } catch {
+        return null;
+    }
+}
+
+function getCustomSchemeFromInputs() {
+    return normalizeColorScheme({
+        primary: customPrimary.value,
+        secondary: customSecondary.value,
+        tertiary: customTertiary.value,
+    });
+}
+
+function setCustomColorInputs(colors) {
+    customPrimary.value = colors.primary;
+    customSecondary.value = colors.secondary;
+    customTertiary.value = colors.tertiary;
+}
+
+function applyColorScheme(name, customColors) {
+    const isCustom = name === "custom";
+    const nextName = isCustom || COLOR_SCHEMES[name] ? name : "aurora";
+    const colors = isCustom
+        ? normalizeColorScheme(customColors || getStoredCustomScheme() || COLOR_SCHEMES.aurora)
+        : COLOR_SCHEMES[nextName];
+
+    document.documentElement.style.setProperty("--primary", colors.primary);
+    document.documentElement.style.setProperty("--primary-rgb", hexToRgbTriplet(colors.primary));
+    document.documentElement.style.setProperty("--primary-2", colors.secondary);
+    document.documentElement.style.setProperty("--primary-2-rgb", hexToRgbTriplet(colors.secondary));
+    document.documentElement.style.setProperty("--primary-3", colors.tertiary);
+    document.documentElement.style.setProperty("--primary-3-rgb", hexToRgbTriplet(colors.tertiary));
+    setCustomColorInputs(colors);
+
+    schemeButtons.forEach(button => {
+        const active = button.dataset.scheme === nextName;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+    });
+
+    localStorage.setItem(SCHEME_STORAGE_KEY, nextName);
+    if (isCustom) {
+        localStorage.setItem(CUSTOM_SCHEME_STORAGE_KEY, JSON.stringify(colors));
+    }
+}
+
+function loadAppearance() {
+    applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || "dark");
+    const storedScheme = localStorage.getItem(SCHEME_STORAGE_KEY) || "aurora";
+    const customColors = getStoredCustomScheme();
+
+    applyColorScheme(storedScheme === "custom" ? "custom" : storedScheme, customColors);
+}
+
 function formatTime(value) {
     const total = Math.max(0, Math.floor(Number(value) || 0));
     const hours = Math.floor(total / 3600);
@@ -176,6 +297,16 @@ function log(msg) {
     logEl.prepend(p);
 }
 
+function getCurrentOsdColors() {
+    const styles = getComputedStyle(document.documentElement);
+
+    return {
+        primary: styles.getPropertyValue("--primary").trim(),
+        secondary: styles.getPropertyValue("--primary-2").trim(),
+        tertiary: styles.getPropertyValue("--primary-3").trim(),
+    };
+}
+
 function showVlcOsd(message, kind = "event") {
     if (!message || !window.myAPI?.showOsdMessage) {
         return;
@@ -184,6 +315,7 @@ function showVlcOsd(message, kind = "event") {
     window.myAPI.showOsdMessage({
         message,
         kind,
+        colors: getCurrentOsdColors(),
         at: Date.now(),
     });
 }
@@ -191,6 +323,99 @@ function showVlcOsd(message, kind = "event") {
 function logSessionEvent(message, kind = "event") {
     log(message);
     showVlcOsd(message, kind);
+}
+
+function setActiveActivityTab(tab) {
+    const showChat = tab === "chat";
+
+    eventsTab.classList.toggle("is-active", !showChat);
+    eventsTab.setAttribute("aria-selected", String(!showChat));
+    chatTab.classList.toggle("is-active", showChat);
+    chatTab.setAttribute("aria-selected", String(showChat));
+
+    eventsPane.hidden = showChat;
+    chatPane.hidden = !showChat;
+
+    if (showChat) {
+        chatInput.focus();
+        updateChatAvailability();
+    }
+}
+
+function normalizeChatText(value) {
+    return String(value || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, MAX_CHAT_LENGTH);
+}
+
+function formatChatTime(value) {
+    return new Date(value || Date.now()).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function renderChatMessage(chat = {}) {
+    const text = normalizeChatText(chat.text);
+    if (!text) {
+        return;
+    }
+
+    const article = document.createElement("article");
+    article.className = `chat-message ${chat.role === "host" ? "host" : ""}`;
+
+    const meta = document.createElement("div");
+    meta.className = "chat-meta";
+
+    const name = document.createElement("strong");
+    name.textContent = chat.name || "Someone";
+
+    const time = document.createElement("time");
+    time.textContent = formatChatTime(chat.at);
+
+    const message = document.createElement("p");
+    message.textContent = text;
+
+    meta.append(name, time);
+    article.append(meta, message);
+    chatMessagesEl.appendChild(article);
+
+    while (chatMessagesEl.children.length > 80) {
+        chatMessagesEl.firstElementChild?.remove();
+    }
+
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+}
+
+function updateChatAvailability() {
+    const connected = socketIsOpen();
+    chatInput.disabled = !connected;
+    chatInput.placeholder = connected ? "Message everyone watching" : "Connect to chat";
+    chatSendButton.disabled = !connected || !normalizeChatText(chatInput.value);
+}
+
+function sendChatMessage() {
+    const text = normalizeChatText(chatInput.value);
+    if (!text) {
+        updateChatAvailability();
+        return;
+    }
+
+    const sent = sendSocket({
+        type: "chat",
+        text,
+    });
+
+    if (!sent) {
+        setActiveActivityTab("chat");
+        log("Connect to a session before chatting");
+        updateChatAvailability();
+        return;
+    }
+
+    chatInput.value = "";
+    updateChatAvailability();
 }
 
 function getLocalActionMessage(successMessage, action = {}) {
@@ -260,6 +485,8 @@ function setRole(r) {
     if (r === "offline") {
         hostValue.innerText = "-";
     }
+
+    updateChatAvailability();
 }
 
 function setStatus(el, state, labelOverride) {
@@ -739,6 +966,17 @@ function handleSocketMessage(data) {
         return;
     }
 
+    if (data.type === "chat") {
+        const chat = data.chat || data;
+        const text = normalizeChatText(chat.text);
+        if (!text) {
+            return;
+        }
+        renderChatMessage(chat);
+        logSessionEvent(`${chat.name || "Someone"}: ${text}`, "chat");
+        return;
+    }
+
     if (data.type === "sync") {
         setSync({
             position: data.status?.time,
@@ -1161,6 +1399,39 @@ themeToggle.onclick = () => {
     applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
 };
 
+schemeButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        applyColorScheme(button.dataset.scheme);
+    });
+});
+
+[customPrimary, customSecondary, customTertiary].forEach(input => {
+    input.addEventListener("input", () => {
+        applyColorScheme("custom", getCustomSchemeFromInputs());
+    });
+});
+
+resetSchemeButton.onclick = () => {
+    localStorage.removeItem(CUSTOM_SCHEME_STORAGE_KEY);
+    applyColorScheme("aurora");
+};
+
+document.addEventListener("click", event => {
+    if (appearanceMenu.open && !appearanceMenu.contains(event.target)) {
+        appearanceMenu.removeAttribute("open");
+    }
+});
+
+eventsTab.onclick = () => setActiveActivityTab("events");
+chatTab.onclick = () => setActiveActivityTab("chat");
+
+chatInput.addEventListener("input", updateChatAvailability);
+
+chatForm.addEventListener("submit", event => {
+    event.preventDefault();
+    sendChatMessage();
+});
+
 checkUpdateButton.onclick = async () => {
     checkUpdateButton.disabled = true;
     checkUpdateButton.innerText = "Checking...";
@@ -1190,7 +1461,7 @@ setInterval(() => {
 }, 2000);
 
 refreshServerBadge();
-applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || "dark");
+loadAppearance();
 loadSavedInputs();
 initAppInfo();
 

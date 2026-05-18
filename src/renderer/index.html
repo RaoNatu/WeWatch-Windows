@@ -35,6 +35,51 @@
                     <span class="theme-knob" aria-hidden="true"></span>
                     <span class="theme-icon moon" aria-hidden="true">☾</span>
                 </button>
+                <details id="appearanceMenu" class="appearance-menu">
+                    <summary class="appearance-trigger">Colors</summary>
+                    <div class="appearance-popover" role="group" aria-label="Color scheme">
+                        <div class="appearance-section">
+                            <span class="appearance-label">Scheme</span>
+                            <div class="scheme-grid" role="radiogroup" aria-label="Preset color schemes">
+                                <button class="scheme-option" type="button" data-scheme="aurora" aria-pressed="true">
+                                    <span class="scheme-swatch aurora" aria-hidden="true"></span>
+                                    Aurora
+                                </button>
+                                <button class="scheme-option" type="button" data-scheme="ember" aria-pressed="false">
+                                    <span class="scheme-swatch ember" aria-hidden="true"></span>
+                                    Ember
+                                </button>
+                                <button class="scheme-option" type="button" data-scheme="forest" aria-pressed="false">
+                                    <span class="scheme-swatch forest" aria-hidden="true"></span>
+                                    Forest
+                                </button>
+                                <button class="scheme-option" type="button" data-scheme="neon" aria-pressed="false">
+                                    <span class="scheme-swatch neon" aria-hidden="true"></span>
+                                    Neon
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="appearance-section">
+                            <span class="appearance-label">Custom colors</span>
+                            <div class="custom-color-grid">
+                                <label>
+                                    Accent
+                                    <input id="customPrimary" type="color" value="#6ee7d8" />
+                                </label>
+                                <label>
+                                    Glow
+                                    <input id="customSecondary" type="color" value="#8f7dff" />
+                                </label>
+                                <label>
+                                    Warmth
+                                    <input id="customTertiary" type="color" value="#ff8b6e" />
+                                </label>
+                            </div>
+                            <button id="resetSchemeButton" class="subtle-button" type="button">Reset colors</button>
+                        </div>
+                    </div>
+                </details>
             </div>
         </div>
     </header>
@@ -174,11 +219,26 @@
 
             </div>
 
-            <section class="event-log" aria-label="Events">
-                <div class="log-heading">
-                    <h3>Events</h3>
+            <section class="event-log activity-panel" aria-label="Session activity">
+                <div class="log-heading activity-heading">
+                    <h3>Activity</h3>
+                    <div class="tab-toggle" role="tablist" aria-label="Activity views">
+                        <button id="eventsTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="eventsPane">Events</button>
+                        <button id="chatTab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="chatPane">Chats</button>
+                    </div>
                 </div>
-                <div id="eventLog"></div>
+
+                <div id="eventsPane" class="activity-pane is-active" role="tabpanel" aria-labelledby="eventsTab">
+                    <div id="eventLog"></div>
+                </div>
+
+                <div id="chatPane" class="activity-pane chat-pane" role="tabpanel" aria-labelledby="chatTab" hidden>
+                    <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+                    <form id="chatForm" class="chat-form">
+                        <input id="chatInput" autocomplete="off" maxlength="500" placeholder="Connect to chat" disabled />
+                        <button id="chatSendButton" type="submit" disabled>Send</button>
+                    </form>
+                </div>
             </section>
 
         </section>

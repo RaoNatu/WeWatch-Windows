@@ -5,6 +5,7 @@ const clients = new Map();
 
 let wss;
 let currentPort = null;
+const MAX_CHAT_LENGTH = 500;
 
 function startServer(port = 3000) {
     const targetPort = Number(port) || 3000;
@@ -137,6 +138,28 @@ function handleConnection(ws, request) {
                 return;
             }
 
+            if (data.type === "chat") {
+                const client = clients.get(id);
+                if (client) {
+                    const text = normalizeChatText(data.text);
+                    if (text) {
+                        broadcast({
+                            type: "chat",
+                            chat: {
+                                id: crypto.randomUUID(),
+                                senderId: id,
+                                name: client.name,
+                                role: client.role,
+                                text,
+                                at: Date.now()
+                            }
+                        });
+                    }
+                }
+
+                return;
+            }
+
             if (data.type === "sync") {
                 broadcast({
                     ...data,
@@ -242,6 +265,13 @@ function getActionMessage(client, action = {}) {
     }
 
     return null;
+}
+
+function normalizeChatText(value) {
+    return String(value || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, MAX_CHAT_LENGTH);
 }
 
 function broadcastStatusEvents(client, previous, next) {
